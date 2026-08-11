@@ -18,6 +18,9 @@ import {
   Target,
 } from "lucide-react";
 
+// Centralized Backend URL Resolution
+const API_URL = import.meta.env.VITE_API_URL || "https://hirepulse-1.onrender.com";
+
 // --- Score Ring Component ---
 const ScoreRing = ({ score, size = "md" }) => {
   const numericScore = typeof score === "number" ? score : parseFloat(score) || 0;
@@ -114,7 +117,6 @@ const ReportCard = ({ report, onRestart }) => {
     report.totalScore ??
     0;
 
-  // Fallbacks covering all snake_case and camelCase response structures
   const questionsList =
     report.questionBreakdown ||
     report.per_question_breakdown ||
@@ -123,7 +125,7 @@ const ReportCard = ({ report, onRestart }) => {
     report.questions ||
     [];
 
-  const topicsCovered = report.topicsCovered || report.topics_covered || [];
+  const topicsCovered = report.topicsCovered || report.topics_missed || [];
   const topicsMissed = report.topicsMissed || report.topics_missed || [];
 
   return (
@@ -285,7 +287,7 @@ export default function InterviewPage() {
       const id = localStorage.getItem("jobai-analysis-id");
       if (!id) return;
       try {
-        const res = await fetch(`/api/analysis/${id}`, {
+        const res = await fetch(`${API_URL}/api/analysis/${id}`, {
           headers: getHeaders(),
           credentials: "include",
         });
@@ -304,13 +306,12 @@ export default function InterviewPage() {
 
   const fetchSessions = async () => {
     try {
-      const res = await fetch("/api/interview-sessions", {
+      const res = await fetch(`${API_URL}/api/interview-sessions`, {
         headers: getHeaders(),
         credentials: "include",
       });
       if (res.ok) {
         const data = await res.json();
-        // Extract array from standard response format
         setSessions(data.sessions || data || []);
       }
     } catch (err) {
@@ -384,7 +385,7 @@ export default function InterviewPage() {
     try {
       const analysisId = localStorage.getItem("jobai-analysis-id") || analysis?.id;
 
-      const res = await fetch("/api/interview-sessions", {
+      const res = await fetch(`${API_URL}/api/interview-sessions`, {
         method: "POST",
         headers: getHeaders(),
         credentials: "include",
@@ -423,7 +424,7 @@ export default function InterviewPage() {
     if (isListening) toggleListening();
 
     try {
-      const res = await fetch(`/api/interview-sessions/${sessionId}/answer`, {
+      const res = await fetch(`${API_URL}/api/interview-sessions/${sessionId}/answer`, {
         method: "POST",
         headers: getHeaders(),
         credentials: "include",
@@ -460,7 +461,7 @@ export default function InterviewPage() {
 
     setEnding(true);
     try {
-      const res = await fetch(`/api/interview-sessions/${sessionId}/finish`, {
+      const res = await fetch(`${API_URL}/api/interview-sessions/${sessionId}/finish`, {
         method: "POST",
         headers: getHeaders(),
         credentials: "include",
@@ -484,7 +485,7 @@ export default function InterviewPage() {
 
   const deleteSession = async (id) => {
     try {
-      const res = await fetch(`/api/interview-sessions/${id}/delete`, {
+      const res = await fetch(`${API_URL}/api/interview-sessions/${id}/delete`, {
         method: "POST",
         headers: getHeaders(),
         credentials: "include",
