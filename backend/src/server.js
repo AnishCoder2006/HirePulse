@@ -20,7 +20,31 @@ import { searchLimiter, analysisLimiter, authLimiter } from './middleware/rateLi
 import Redis from 'ioredis';
 
 const app = express();
-app.use(cors());
+
+// ✅ Allowed origins whitelist for credentials: "include"
+const allowedOrigins = [
+  'https://hire-pulse-ruddy.vercel.app',
+  'https://hire-pulse.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like Postman, mobile apps, or curl)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
 app.use(express.json({ limit: '2mb' }));
 app.use(requestLogger);
 
@@ -36,15 +60,11 @@ redis.on('error', (err) => {
 });
 
 // Health check — used by Docker/K8s to know the service is alive.
-// In interviews you can mention: "a /health endpoint lets orchestration
-// tools know the service is ready to receive traffic."
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Readiness check — verifies critical dependencies are connected.
-// This is more thorough than a simple health check.
 app.get('/ready', async (req, res) => {
   try {
-    // Quick Redis ping
     await redis.ping();
     res.json({ status: 'ready', redis: 'connected' });
   } catch {
@@ -53,9 +73,6 @@ app.get('/ready', async (req, res) => {
 });
 
 app.use('/api/auth', authLimiter, authRoutes);
-// requireAuth runs before the limiter so the token bucket is keyed by
-// userId rather than a shared IP (NAT/proxy would otherwise lump all
-// users into one bucket).
 app.use('/api/jobs', requireAuth, searchLimiter, jobRoutes);
 app.use('/api/resume', resumeRoutes);
 app.use('/api/analysis', requireAuth, analysisLimiter, analysisRoutes);
@@ -65,7 +82,6 @@ app.use('/api/saved-jobs', savedJobsRoutes);
 app.use('/api/star-stories', starStoriesRoutes);
 
 app.use(errorHandler);
-
 
 const server = http.createServer(app);
 initSocket(server);
@@ -77,8 +93,6 @@ connectDB().then(() => {
 });
 
 // ✅ Graceful shutdown — close DB, Redis, and HTTP server cleanly.
-// In an interview: "graceful shutdown ensures in-flight requests complete
-// and connections are closed properly when the service is restarted."
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received — shutting down gracefully...');
   server.close(async () => {
