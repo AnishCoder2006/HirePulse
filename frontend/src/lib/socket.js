@@ -1,7 +1,8 @@
 import { io } from 'socket.io-client';
 import { getStoredToken } from './auth';
+import { BACKEND_URL } from './apiConfig';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000';
+const SOCKET_URL = BACKEND_URL;
 
 let socket = null;
 let listeners = [];

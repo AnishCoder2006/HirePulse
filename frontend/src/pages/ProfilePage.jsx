@@ -18,13 +18,10 @@ import {
     FileText
 } from 'lucide-react';
 
-const rawApiUrl = import.meta.env.VITE_API_URL;
-const API_BASE = rawApiUrl
-    ? `${rawApiUrl.replace(/\/+$|\/api$/, '')}/api`
-    : '/api';
+import { API_BASE, safeFetchJson } from '../lib/apiConfig';
 
 async function apiRequest(path, options = {}) {
-    const response = await fetch(`${API_BASE}${path}`, {
+    return safeFetchJson(`${API_BASE}${path}`, {
         ...options,
         headers: {
             'Content-Type': 'application/json',
@@ -32,25 +29,6 @@ async function apiRequest(path, options = {}) {
             ...options.headers
         }
     });
-    if (!response.ok) {
-        const contentType = response.headers.get('content-type') || '';
-        let errorMsg = `HTTP ${response.status}`;
-        if (contentType.includes('application/json')) {
-            try {
-                const payload = await response.json();
-                errorMsg = payload.error || payload.message || errorMsg;
-            } catch {
-                // keep status code as message
-            }
-        } else {
-            const text = await response.text().catch(() => '');
-            if (text) errorMsg = text;
-        }
-        const err = new Error(errorMsg);
-        err.status = response.status;
-        throw err;
-    }
-    return response.json();
 }
 
 export default function ProfilePage() {

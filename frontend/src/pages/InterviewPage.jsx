@@ -18,8 +18,10 @@ import {
   Target,
 } from "lucide-react";
 
+import { BACKEND_URL } from "../lib/apiConfig";
+
 // Centralized Backend URL Resolution
-const API_URL = import.meta.env.VITE_API_URL || "https://hirepulse-1.onrender.com";
+const API_URL = BACKEND_URL;
 
 // --- Score Ring Component ---
 const ScoreRing = ({ score, size = "md" }) => {

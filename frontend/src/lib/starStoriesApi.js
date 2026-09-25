@@ -1,15 +1,9 @@
 import { getAuthHeaders } from './auth';
 
-const rawApiUrl = import.meta.env.VITE_API_URL;
-const normalizedApiUrl = rawApiUrl?.replace(/\/+$/, '');
-const API_BASE = rawApiUrl
-  ? `${normalizedApiUrl.replace(/\/api$/, '')}/api`
-  : import.meta.env.DEV
-    ? 'http://localhost:4000/api'
-    : '/api';
+import { API_BASE, safeFetchJson } from './apiConfig';
 
 async function apiRequest(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
+  return safeFetchJson(`${API_BASE}${path}`, {
     cache: 'no-store',
     ...options,
     headers: {
@@ -18,21 +12,6 @@ async function apiRequest(path, options = {}) {
       ...options.headers
     }
   });
-  if (!response.ok) {
-    const contentType = response.headers.get('content-type') || '';
-    let errorMsg = `HTTP ${response.status}`;
-    if (contentType.includes('application/json')) {
-      try {
-        const payload = await response.json();
-        errorMsg = payload.error || payload.message || errorMsg;
-      } catch {
-        // keep status
-      }
-    }
-    throw new Error(errorMsg);
-  }
-  if (response.status === 204) return null;
-  return response.json();
 }
 
 export async function fetchStarStories({ starred, analysisId } = {}) {

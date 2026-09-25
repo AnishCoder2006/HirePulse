@@ -25,21 +25,13 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-const rawApiUrl = import.meta.env.VITE_API_URL;
-const API_BASE = rawApiUrl
-  ? `${rawApiUrl.replace(/\/+$|\/api$/, '')}/api`
-  : '/api';
+import { API_BASE, safeFetchJson } from '../lib/apiConfig';
 
 async function apiGet(path) {
-  const response = await fetch(`${API_BASE}${path}`, {
+  return safeFetchJson(`${API_BASE}${path}`, {
     cache: 'no-store',
     headers: getAuthHeaders()
   });
-  if (!response.ok) {
-    const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.error || 'Search failed');
-  }
-  return response.json();
 }
 
 function formatSalary(min, max) {

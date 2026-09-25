@@ -23,16 +23,10 @@ import {
 import { getAuthHeaders } from '../lib/auth';
 import { exportAnalysisPDF } from '../lib/pdfExport';
 
-const rawApiUrl = import.meta.env.VITE_API_URL;
-const normalizedApiUrl = rawApiUrl?.replace(/\/+$/, '');
-const API_BASE = rawApiUrl
-    ? `${normalizedApiUrl.replace(/\/api$/, '')}/api`
-    : import.meta.env.DEV
-        ? 'http://localhost:4000/api'
-        : '/api';
+import { API_BASE, safeFetchJson } from '../lib/apiConfig';
 
 async function apiRequest(path, options = {}) {
-    const response = await fetch(`${API_BASE}${path}`, {
+    return safeFetchJson(`${API_BASE}${path}`, {
         cache: 'no-store',
         ...options,
         headers: {
@@ -41,11 +35,6 @@ async function apiRequest(path, options = {}) {
             ...options.headers
         }
     });
-    if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
-        throw new Error(payload.error || `Request to ${path} failed`);
-    }
-    return response.json();
 }
 
 function toViewModel(record) {

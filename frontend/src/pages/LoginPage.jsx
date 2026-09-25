@@ -3,10 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { clearAuthState } from '../lib/auth';
 import toast from 'react-hot-toast';
 
-const rawApiUrl = import.meta.env.VITE_API_URL;
-const API_BASE = rawApiUrl
-    ? `${rawApiUrl.replace(/\/+$|\/api$/, '')}/api`
-    : '/api';
+import { API_BASE, safeFetchJson } from '../lib/apiConfig';
 
 export default function AuthPage() {
     const navigate = useNavigate();
@@ -26,13 +23,11 @@ export default function AuthPage() {
         e.preventDefault();
         setLoginLoading(true);
         try {
-            const response = await fetch(`${API_BASE}/auth/login`, {
+            const data = await safeFetchJson(`${API_BASE}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginForm)
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to sign in');
 
             clearAuthState();
             localStorage.setItem('token', data.token);
@@ -51,13 +46,11 @@ export default function AuthPage() {
         e.preventDefault();
         setSignupLoading(true);
         try {
-            const response = await fetch(`${API_BASE}/auth/register`, {
+            const data = await safeFetchJson(`${API_BASE}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(signupForm)
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to create account');
 
             clearAuthState();
             localStorage.setItem('token', data.token);
