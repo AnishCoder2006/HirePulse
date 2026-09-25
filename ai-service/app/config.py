@@ -16,16 +16,16 @@ class Settings(BaseSettings):
 
     groq_api_key: str = ""
     groq_model: str = "qwen/qwen3.8-27b"
-    groq_fallback_model: str = "openai/gpt-oss-20b"
+    groq_fallback_model: str = "qwen/qwen3.8-27b"  # Only one Groq model available
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-3.8-flash"
-    gemini_fallback_model: str = "gemini-3.5-flash-lite"
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_fallback_model: str = "gemini-2.5-flash-lite"
     # Update if Google ships a newer embedding model - this is current as of
     # this service's last review, not guaranteed to stay the latest.
     gemini_embedding_model: str = "models/text-embedding-004"
     internal_service_token: str = "dev-token"   # ✅ default so startup won’t fail
-    llm_timeout_seconds: int = 30
-    llm_max_retries: int = 3
+    llm_timeout_seconds: int = 60
+    llm_max_retries: int = 4
 
 
 settings = Settings()
