@@ -1,4 +1,12 @@
-const rawApiUrl = import.meta.env.VITE_API_URL;
+let rawApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+
+if (
+  !rawApiUrl ||
+  (!rawApiUrl.startsWith('http://') && !rawApiUrl.startsWith('https://')) ||
+  rawApiUrl.includes('vercel.app')
+) {
+  rawApiUrl = '';
+}
 
 export const BACKEND_URL = rawApiUrl
   ? rawApiUrl.replace(/\/+$/, '').replace(/\/api$/, '')
