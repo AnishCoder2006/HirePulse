@@ -26,14 +26,19 @@ async function post(path, body, attempt = 1) {
     throw Object.assign(new Error(`AI service unreachable at ${path}: ${detail}`), { status: 502 });
   }
 
-  if (response.status >= 500 && attempt < MAX_RETRIES) {
-    await sleep(2 ** attempt * 500);
+  if ((response.status >= 500 || response.status === 429) && attempt < MAX_RETRIES) {
+    const delay = 2 ** attempt * 1000;
+    console.warn(`[AI Service] ${path} returned ${response.status}. Retrying attempt ${attempt + 1}/${MAX_RETRIES} after ${delay}ms...`);
+    await sleep(delay);
     return post(path, body, attempt + 1);
   }
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw Object.assign(new Error(payload.error || `AI service error at ${path}: ${response.status}`), {
+    const message = response.status === 429
+      ? 'AI service rate limit reached (429). Please wait a moment and try again.'
+      : (payload.error || `AI service error at ${path}: ${response.status}`);
+    throw Object.assign(new Error(message), {
       status: response.status >= 500 ? 502 : response.status
     });
   }

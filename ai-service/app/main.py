@@ -47,7 +47,15 @@ async def require_internal_token(request: Request, call_next):
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     logger.exception("Unhandled error on %s", request.url.path)
-    return JSONResponse(status_code=502, content={"error": f"AI service error: {str(exc)}"})
+    err_str = str(exc)
+    err_lower = err_str.lower()
+    if any(k in err_lower for k in ("429", "rate limit", "rate_limit", "tpm", "rpm", "quota", "resource_exhausted", "too many requests")):
+        return JSONResponse(
+            status_code=429,
+            content={"error": "AI service rate limit reached (429). Please wait a moment and try again."}
+        )
+    return JSONResponse(status_code=502, content={"error": f"AI service error: {err_str}"})
+
 
 
 @app.get("/health")

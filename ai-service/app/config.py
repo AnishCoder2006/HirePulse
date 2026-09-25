@@ -9,8 +9,10 @@ class Settings(BaseSettings):
 
     groq_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
+    groq_fallback_model: str = "llama-3.1-8b-instant"
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"
+    gemini_fallback_model: str = "gemini-1.5-flash"
     # Update if Google ships a newer embedding model - this is current as of
     # this service's last review, not guaranteed to stay the latest.
     gemini_embedding_model: str = "models/text-embedding-004"
@@ -20,3 +22,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

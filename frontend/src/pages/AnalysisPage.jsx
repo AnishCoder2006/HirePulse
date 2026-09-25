@@ -340,9 +340,18 @@ export default function AnalysisPage() {
                     </div>
 
                     {error && (
-                        <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2">
-                            <XCircle className="w-4 h-4 shrink-0" />
-                            {error}
+                        <div className="mt-4 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                                <XCircle className="w-4 h-4 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                            <button
+                                onClick={runAnalysis}
+                                disabled={loading || !resumeText.trim()}
+                                className="shrink-0 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600/90 hover:bg-indigo-500 border border-indigo-500/30 rounded-lg shadow-sm transition"
+                            >
+                                Retry Analysis
+                            </button>
                         </div>
                     )}
                 </motion.div>
