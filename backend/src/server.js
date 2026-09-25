@@ -81,6 +81,11 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/saved-jobs', savedJobsRoutes);
 app.use('/api/star-stories', starStoriesRoutes);
 
+// Fallback JSON 404 handler for unmatched /api endpoints
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: `API endpoint ${req.originalUrl} not found` });
+});
+
 app.use(errorHandler);
 
 const server = http.createServer(app);

@@ -12,13 +12,21 @@ export async function safeFetchJson(url, options = {}) {
   const response = await fetch(url, options);
   const contentType = response.headers.get('content-type') || '';
 
-  if (contentType.includes('text/html')) {
-    throw new Error('Backend server returned an HTML response instead of JSON. The server may be waking up or temporarily unavailable. Please try again in a few seconds.');
+  if (!response.ok) {
+    let payload = {};
+    if (contentType.includes('application/json')) {
+      payload = await response.json().catch(() => ({}));
+    }
+    const message = payload.error || payload.message || (
+      contentType.includes('text/html')
+        ? (response.status === 404 ? 'Requested resource not found (404)' : 'Backend server is currently waking up or unavailable. Please try again in a few seconds.')
+        : `Request failed with status ${response.status}`
+    );
+    throw new Error(message);
   }
 
-  if (!response.ok) {
-    const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.error || payload.message || `Request failed with status ${response.status}`);
+  if (contentType.includes('text/html')) {
+    throw new Error('Backend server returned an HTML response. Please try again in a few seconds.');
   }
 
   return response.json();
